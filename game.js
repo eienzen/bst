@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const referrerAddress = urlParams.get("ref");
-    if (referrerAddress && !playerData.pendingReferral && ethers.isAddress(referrerAddress)) {
+    if (referrerAddress && !playerData.pendingReferral && ethers.utils.isAddress(referrerAddress)) {
         playerData.pendingReferral = referrerAddress;
     }
 
@@ -1415,12 +1415,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let gameOracleProvider;
     try {
-        gameOracleProvider = new ethers.JsonRpcProvider("https://data-seed-prebsc-1-s1.bnbchain.org:8545/", { chainId: 97, name: "BNB Testnet" });
-        console.log("Connected to JSON-RPC provider.");
+        gameOracleProvider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.bnbchain.org:8545");
+        console.log("Connected to primary JSON-RPC provider.");
     } catch (error) {
         console.error("Failed to connect to primary provider:", error);
         try {
-            gameOracleProvider = new ethers.JsonRpcProvider("https://data-seed-prebsc-2-s1.bnbchain.org:8545/", { chainId: 97, name: "BNB Testnet" });
+            gameOracleProvider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-2-s1.bnbchain.org:8545");
             console.log("Connected to backup JSON-RPC provider.");
         } catch (backupError) {
             console.error("Failed to connect to backup provider:", backupError);
@@ -1616,7 +1616,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const tx = await contract.claimWelcomeBonus({ gasLimit: 200000 });
             await tx.wait();
             playerData.hasClaimedWelcomeBonus = true;
-            const welcomeBonus = Number(ethers.formatUnits(await contract.welcomeBonus(), 18));
+            const welcomeBonus = Number(ethers.utils.formatUnits(await contract.welcomeBonus(), 18));
             playerData.pendingPoints = (playerData.pendingPoints || 0) + welcomeBonus;
             playerData.totalPoints = (playerData.totalPoints || 0) + welcomeBonus;
             playerData.rewardHistory.push({ amount: welcomeBonus, timestamp: Date.now(), rewardType: "Welcome Bonus", referee: "N/A" });
@@ -1625,7 +1625,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(`Welcome bonus of ${welcomeBonus} BST Points claimed!`);
         } catch (error) {
             console.error("Error claiming welcome bonus:", error);
-            alert("Failed to claim bonus: " + error.message);
+            alert("Failed to claim bonus: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1648,7 +1648,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(`Daily login reward of ${dailyReward} BST Points claimed!`);
         } catch (error) {
             console.error("Error claiming daily login reward:", error);
-            alert("Failed to claim daily reward: " + error.message);
+            alert("Failed to claim daily reward: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1667,7 +1667,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(`Social media share reward of ${shareReward} BST Points claimed!`);
         } catch (error) {
             console.error("Error claiming social media share reward:", error);
-            alert("Failed to claim share reward: " + error.message);
+            alert("Failed to claim share reward: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1681,31 +1681,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (pointsToConvert > playerData.pendingPoints) return alert("Insufficient BST Points!");
         try {
             showLoading(true);
-            const provider = new ethers.BrowserProvider(window.ethereum);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
             const balance = await provider.getBalance(account);
-            const feeInWei = ethers.parseUnits(WITHDRAWAL_FEE_BNB, "ether");
-            if (balance < feeInWei) {
+            const feeInWei = ethers.utils.parseUnits(WITHDRAWAL_FEE_BNB, "ether");
+            if (balance.lt(feeInWei)) {
                 alert(`Need ${WITHDRAWAL_FEE_BNB} BNB for conversion fee.`);
                 return;
             }
-            const pointsInWei = ethers.parseUnits(pointsToConvert.toString(), 18);
+            const pointsInWei = ethers.utils.parseUnits(pointsToConvert.toString(), 18);
             const tokensToReceive = pointsToConvert / CONVERSION_RATIO;
-            const tokensInWei = ethers.parseUnits(tokensToReceive.toString(), 18);
+            const tokensInWei = ethers.utils.parseUnits(tokensToReceive.toString(), 18);
             const contractBal = await contract.contractBalance();
-            if (ethers.toBigInt(contractBal) < tokensInWei) {
+            if (ethers.BigNumber.from(contractBal).lt(tokensInWei)) {
                 alert("Contract does not have enough BST tokens!");
                 return;
             }
             const tx = await contract.convertPointsToTokens(
                 pointsInWei,
                 account,
-                playerData.pendingReferral || ethers.ZeroAddress,
+                playerData.pendingReferral || ethers.constants.AddressZero,
                 { value: feeInWei, gasLimit: 500000 }
             );
             await tx.wait();
             playerData.pendingPoints -= pointsToConvert;
             playerData.totalRewards += tokensToReceive;
-            playerData.walletBalance = Number(ethers.formatUnits(await contract.balanceOf(account), 18));
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             playerData.rewardHistory.push({ amount: tokensToReceive, timestamp: Date.now(), rewardType: "Points Conversion", referee: "N/A" });
             if (playerData.pendingReferral) {
                 const referrerPoints = pointsToConvert * 0.01;
@@ -1719,7 +1719,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(`${pointsToConvert} BST Points converted to ${tokensToReceive} BST Tokens!`);
         } catch (error) {
             console.error("Error converting points to tokens:", error);
-            alert("Failed to convert points: " + error.message);
+            alert("Failed to convert points: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1732,9 +1732,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (amount <= 0) return alert("Enter a valid amount!");
         try {
             showLoading(true);
-            const amountInWei = ethers.parseUnits(amount.toString(), 18);
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
             const walletBalance = await contract.balanceOf(account);
-            if (ethers.toBigInt(walletBalance) < amountInWei) {
+            if (ethers.BigNumber.from(walletBalance).lt(amountInWei)) {
                 alert("Insufficient BST Tokens in wallet!");
                 return;
             }
@@ -1744,17 +1744,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 playerData.flexibleStakeBalance = (playerData.flexibleStakeBalance || 0) + amount;
             } else {
                 playerData.lockedStakeBalances[lockPeriod] = (playerData.lockedStakeBalances[lockPeriod] || 0) + amount;
-                playerData.lockedStakeStartTimes[lockPeriod] = Date.now() / 1000;
+                playerData.lockedStakeStartTimes[lockPeriod] = Math.floor(Date.now() / 1000);
             }
             playerData.stakingHistory.push({ amount, timestamp: Date.now(), lockPeriod, action: "Stake" });
-            playerData.walletBalance = Number(ethers.formatUnits(await contract.balanceOf(account), 18));
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
             alert(`${amount} BST Tokens staked successfully!`);
             document.getElementById("stakeAmount").value = "";
         } catch (error) {
             console.error("Error staking tokens:", error);
-            alert("Failed to stake: " + error.message);
+            alert("Failed to stake: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1767,7 +1767,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (amount <= 0) return alert("Enter a valid amount!");
         try {
             showLoading(true);
-            const amountInWei = ethers.parseUnits(amount.toString(), 18);
+            const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
             const tx = await contract.unstakeTokens(amountInWei, lockPeriod, { gasLimit: 500000 });
             await tx.wait();
             if (lockPeriod === 0) {
@@ -1776,24 +1776,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 playerData.lockedStakeBalances[lockPeriod] = (playerData.lockedStakeBalances[lockPeriod] || 0) - amount;
             }
             playerData.stakingHistory.push({ amount, timestamp: Date.now(), lockPeriod, action: "Unstake" });
-            playerData.walletBalance = Number(ethers.formatUnits(await contract.balanceOf(account), 18));
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
             alert(`${amount} BST Tokens unstaked successfully!`);
             document.getElementById("unstakeAmount").value = "";
         } catch (error) {
             console.error("Error unstaking tokens:", error);
-            alert("Failed to unstake: " + error.message);
+            alert("Failed to unstake: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
     }
 
     async function connectWallet() {
-        if (!window.ethereum) return alert("Install MetaMask!");
+        if (!window.ethereum) return alert("Please install MetaMask!");
         try {
             showLoading(true);
-            const provider = new ethers.BrowserProvider(window.ethereum);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
             await provider.send("eth_requestAccounts", []);
             const network = await provider.getNetwork();
             const chainId = network.chainId.toString();
@@ -1820,21 +1820,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             }
-            account = (await provider.send("eth_requestAccounts", []))[0];
+            const accounts = await provider.send("eth_requestAccounts", []);
+            account = accounts[0];
             playerData.walletAddress = account;
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, await provider.getSigner());
-            WITHDRAWAL_FEE_BNB = ethers.formatUnits(await contract.withdrawalFeeInBnb(), "ether");
-            MAX_CONVERSION_LIMIT = Number(ethers.formatUnits(await contract.maxConversionLimit(), 18));
-            CONVERSION_RATIO = Number(ethers.formatUnits(await contract.conversionRatio(), 18));
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
+            WITHDRAWAL_FEE_BNB = ethers.utils.formatUnits(await contract.withdrawalFeeInBnb(), "ether");
+            MAX_CONVERSION_LIMIT = Number(ethers.utils.formatUnits(await contract.maxConversionLimit(), 18));
+            CONVERSION_RATIO = Number(ethers.utils.formatUnits(await contract.conversionRatio(), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
             document.getElementById("connectWallet").style.display = "none";
             document.getElementById("disconnectWallet").style.display = "block";
             document.getElementById("walletAddress").textContent = `Connected: ${account.slice(0, 6)}...`;
-            alert("Wallet connected!");
+            alert("Wallet connected successfully!");
         } catch (error) {
-            console.error("Wallet error:", error);
-            alert("Failed to connect: " + error.message);
+            console.error("Wallet connection error:", error);
+            alert("Failed to connect wallet: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
@@ -1871,33 +1872,33 @@ document.addEventListener("DOMContentLoaded", () => {
             showLoading(true);
             const history = await contract.playerHistory(account);
             playerData.gamesPlayed = Number(history.gamesPlayed) || 0;
-            playerData.totalRewards = Number(ethers.formatUnits(history.totalRewards || 0, 18));
+            playerData.totalRewards = Number(ethers.utils.formatUnits(history.totalRewards || 0, 18));
             playerData.totalReferrals = Number(history.totalReferrals) || 0;
-            playerData.referralPoints = Number(ethers.formatUnits(history.referralRewards || 0, 18));
+            playerData.referralPoints = Number(ethers.utils.formatUnits(history.referralRewards || 0, 18));
             playerData.hasClaimedWelcomeBonus = history.hasClaimedWelcomeBonus || false;
-            playerData.pendingPoints = Number(ethers.formatUnits(await contract.getInternalBalance(account), 18));
-            playerData.walletBalance = Number(ethers.formatUnits(await contract.balanceOf(account), 18));
-            playerData.flexibleStakeBalance = Number(ethers.formatUnits(history.flexibleStakeBalance || 0, 18));
+            playerData.pendingPoints = Number(ethers.utils.formatUnits(await contract.getInternalBalance(account), 18));
+            playerData.walletBalance = Number(ethers.utils.formatUnits(await contract.balanceOf(account), 18));
+            playerData.flexibleStakeBalance = Number(ethers.utils.formatUnits(history.flexibleStakeBalance || 0, 18));
 
             playerData.lockedStakeBalances[0] = playerData.flexibleStakeBalance;
             for (let i = 1; i <= 3; i++) {
-                playerData.lockedStakeBalances[i] = Number(ethers.formatUnits(await contract.getLockedStakeBalance(account, i), 18));
+                playerData.lockedStakeBalances[i] = Number(ethers.utils.formatUnits(await contract.getLockedStakeBalance(account, i), 18));
                 playerData.lockedStakeStartTimes[i] = Number(await contract.getLockedStakeStartTime(account, i));
             }
 
             const rewards = await contract.getRewardHistory(account);
             playerData.rewardHistory = rewards.map(reward => ({
-                amount: Number(ethers.formatUnits(reward.amount, 18)),
+                amount: Number(ethers.utils.formatUnits(reward.amount, 18)),
                 timestamp: Number(reward.timestamp) * 1000,
                 rewardType: reward.rewardType,
-                referee: reward.referee === ethers.ZeroAddress ? "N/A" : reward.referee
+                referee: reward.referee === ethers.constants.AddressZero ? "N/A" : reward.referee
             }));
 
             updatePlayerHistoryUI();
             localStorage.setItem("playerData", JSON.stringify(playerData));
         } catch (error) {
-            console.error("History error:", error);
-            alert("Failed to load history: " + error.message);
+            console.error("Error loading player history:", error);
+            alert("Failed to load history: " + (error.message || "Unknown error"));
         } finally {
             showLoading(false);
         }
