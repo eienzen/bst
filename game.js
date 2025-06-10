@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         playerData.pendingReferral = referrerAddress;
     }
 
-    const CONTRACT_ADDRESS = "0xCaA1aD9cfD1f070682DEE327eE55818097b02C34"; // Deploy ke baad update kijiye
+    const CONTRACT_ADDRESS = "0x1eE520578EB3F94faAe5b4E2De5D57A85b84a8C8"; // Deploy ke baad update kijiye
     const GAME_ORACLE_ADDRESS = "0x6C12d2802cCF7072e9ED33b3bdBB0ce4230d5032";
     const CONTRACT_ABI = [
 	{
