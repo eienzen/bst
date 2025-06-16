@@ -38,1380 +38,1379 @@ document.addEventListener("DOMContentLoaded", () => {
         playerData.pendingReferral = referrerAddress;
     }
 
-    const CONTRACT_ADDRESS = "0x1eE520578EB3F94faAe5b4E2De5D57A85b84a8C8"; // Deploy ke baad update kijiye
-    const GAME_ORACLE_ADDRESS = "0x6C12d2802cCF7072e9ED33b3bdBB0ce4230d5032";
+    const CONTRACT_ADDRESS = "0x1eE520578EB3F94faAe5b4E2De5D57A85b84a8C8"; // Update after deployment
     const CONTRACT_ABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "allowance",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "needed",
-				"type": "uint256"
-			}
-		],
-		"name": "ERC20InsufficientAllowance",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "balance",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "needed",
-				"type": "uint256"
-			}
-		],
-		"name": "ERC20InsufficientBalance",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "approver",
-				"type": "address"
-			}
-		],
-		"name": "ERC20InvalidApprover",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			}
-		],
-		"name": "ERC20InvalidReceiver",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			}
-		],
-		"name": "ERC20InvalidSender",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			}
-		],
-		"name": "ERC20InvalidSpender",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
-		"name": "OwnableInvalidOwner",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			}
-		],
-		"name": "OwnableUnauthorizedAccount",
-		"type": "error"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "Approval",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "oldOracle",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newOracle",
-				"type": "address"
-			}
-		],
-		"name": "GameOracleUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "period",
-				"type": "uint8"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newRate",
-				"type": "uint256"
-			}
-		],
-		"name": "LockRewardUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newLimit",
-				"type": "uint256"
-			}
-		],
-		"name": "MaxConversionLimitUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "oldWallet",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newWallet",
-				"type": "address"
-			}
-		],
-		"name": "OwnerWalletUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "previousOwner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "OwnershipTransferred",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "points",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "tokens",
-				"type": "uint256"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "referrerPoints",
-				"type": "uint256"
-			}
-		],
-		"name": "PointsConverted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "referee",
-				"type": "address"
-			}
-		],
-		"name": "ReferralAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newRate",
-				"type": "uint256"
-			}
-		],
-		"name": "ReferralCommissionRateUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
-		"name": "SecretKeyUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "TokensBurned",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ownerAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "contractAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "TokensMinted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			}
-		],
-		"name": "TokensStaked",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "reward",
-				"type": "uint256"
-			}
-		],
-		"name": "TokensUnstaked",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "Transfer",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "points",
-				"type": "uint256"
-			}
-		],
-		"name": "WelcomeBonusClaimed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newBonus",
-				"type": "uint256"
-			}
-		],
-		"name": "WelcomeBonusUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newFeeInBnbWei",
-				"type": "uint256"
-			}
-		],
-		"name": "WithdrawalFeeUpdated",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "burnTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claimWelcomeBonus",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "points",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			}
-		],
-		"name": "convertPointsToTokens",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "mintTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "renounceOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			}
-		],
-		"name": "stakeTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_gameOracle",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			}
-		],
-		"name": "unstakeTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_newRatio",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateConversionRatio",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_newOracle",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateGameOracle",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "period",
-				"type": "uint8"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_newRate",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateLockReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_newLimit",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateMaxConversionLimit",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_newWallet",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateOwnerWallet",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_newRate",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateReferralCommissionRate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_newKey",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_currentKey",
-				"type": "string"
-			}
-		],
-		"name": "updateSecretKey",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_newBonus",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateWelcomeBonus",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_newFeeInBnbWei",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_key",
-				"type": "string"
-			}
-		],
-		"name": "updateWithdrawalFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			}
-		],
-		"name": "allowance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			}
-		],
-		"name": "balanceOf",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "contractBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "conversionRatio",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "decimals",
-		"outputs": [
-			{
-				"internalType": "uint8",
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "gameOracle",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			}
-		],
-		"name": "getInternalBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			}
-		],
-		"name": "getLockedStakeBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "lockPeriod",
-				"type": "uint8"
-			}
-		],
-		"name": "getLockedStakeStartTime",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "player",
-				"type": "address"
-			}
-		],
-		"name": "getRewardHistory",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "uint256",
-						"name": "amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "timestamp",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "rewardType",
-						"type": "string"
-					},
-					{
-						"internalType": "address",
-						"name": "referee",
-						"type": "address"
-					}
-				],
-				"internalType": "struct BlockSnakesGame.Reward[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"name": "lockedStakeBalances",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"name": "lockedStakeStartTimes",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"name": "lockPeriods",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "enum BlockSnakesGame.LockPeriod",
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"name": "lockRewards",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "maxConversionLimit",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "name",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "ownerWallet",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "playerHistory",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "gamesPlayed",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalRewards",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalReferrals",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "referralRewards",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "hasClaimedWelcomeBonus",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint256",
-				"name": "internalBalance",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "flexibleStakeBalance",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "referralCommissionRate",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "referrals",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "rewardHistory",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "rewardType",
-				"type": "string"
-			},
-			{
-				"internalType": "address",
-				"name": "referee",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "symbol",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalSupply",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "welcomeBonus",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdrawalFeeInBnb",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "allowance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientAllowance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "balance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "needed",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ERC20InsufficientBalance",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "approver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidApprover",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "receiver",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidReceiver",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "sender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSender",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "ERC20InvalidSpender",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnableInvalidOwner",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnableUnauthorizedAccount",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "oldOracle",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOracle",
+                    "type": "address"
+                }
+            ],
+            "name": "GameOracleUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "period",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "newRate",
+                    "type": "uint256"
+                }
+            ],
+            "name": "LockRewardUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "newLimit",
+                    "type": "uint256"
+                }
+            ],
+            "name": "MaxConversionLimitUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "oldWallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newWallet",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnerWalletUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "points",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "tokens",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "referrer",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "referrerPoints",
+                    "type": "uint256"
+                }
+            ],
+            "name": "PointsConverted",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "referrer",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "referee",
+                    "type": "address"
+                }
+            ],
+            "name": "ReferralAdded",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "newRate",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ReferralCommissionRateUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "SecretKeyUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "TokensBurned",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "totalAmount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "ownerAmount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "contractAmount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "TokensMinted",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                }
+            ],
+            "name": "TokensStaked",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "reward",
+                    "type": "uint256"
+                }
+            ],
+            "name": "TokensUnstaked",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "points",
+                    "type": "uint256"
+                }
+            ],
+            "name": "WelcomeBonusClaimed",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "newBonus",
+                    "type": "uint256"
+                }
+            ],
+            "name": "WelcomeBonusUpdated",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "newFeeInBnbWei",
+                    "type": "uint256"
+                }
+            ],
+            "name": "WithdrawalFeeUpdated",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approve",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "burnTokens",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "claimWelcomeBonus",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "points",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "referrer",
+                    "type": "address"
+                }
+            ],
+            "name": "convertPointsToTokens",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "mintTokens",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                }
+            ],
+            "name": "stakeTokens",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transfer",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferFrom",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_gameOracle",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                }
+            ],
+            "name": "unstakeTokens",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_newRatio",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateConversionRatio",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_newOracle",
+                    "type": "address"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateGameOracle",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "period",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_newRate",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateLockReward",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_newLimit",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateMaxConversionLimit",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_newWallet",
+                    "type": "address"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateOwnerWallet",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_newRate",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateReferralCommissionRate",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "_newKey",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_currentKey",
+                    "type": "string"
+                }
+            ],
+            "name": "updateSecretKey",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_newBonus",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateWelcomeBonus",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_newFeeInBnbWei",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "_key",
+                    "type": "string"
+                }
+            ],
+            "name": "updateWithdrawalFee",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "spender",
+                    "type": "address"
+                }
+            ],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "account",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "contractBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "conversionRatio",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "gameOracle",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                }
+            ],
+            "name": "getInternalBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                }
+            ],
+            "name": "getLockedStakeBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "lockPeriod",
+                    "type": "uint8"
+                }
+            ],
+            "name": "getLockedStakeStartTime",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "player",
+                    "type": "address"
+                }
+            ],
+            "name": "getRewardHistory",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "rewardType",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "referee",
+                            "type": "address"
+                        }
+                    ],
+                    "internalType": "struct BlockSnakesGame.Reward[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "name": "lockedStakeBalances",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                },
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "name": "lockedStakeStartTimes",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "name": "lockPeriods",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "enum BlockSnakesGame.LockPeriod",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "name": "lockRewards",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "maxConversionLimit",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "ownerWallet",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "playerHistory",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "gamesPlayed",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "totalRewards",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "totalReferrals",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "referralRewards",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "hasClaimedWelcomeBonus",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "internalBalance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "flexibleStakeBalance",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "referralCommissionRate",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "referrals",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "rewardHistory",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "string",
+                    "name": "rewardType",
+                    "type": "string"
+                },
+                {
+                    "internalType": "address",
+                    "name": "referee",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "welcomeBonus",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "withdrawalFeeInBnb",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ];
 
     let gameOracleProvider;
     try {
@@ -1446,7 +1445,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const victorySound = document.getElementById("victorySound");
 
     function showLoading(show) {
-        document.getElementById("loadingIndicator").style.display = show ? "block" : "none";
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        if (loadingIndicator) {
+            loadingIndicator.style.display = show ? "block" : "none";
+        }
     }
 
     function updateCanvasSize() {
@@ -1515,8 +1517,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.fillRect(box.x * gridSize, box.y * gridSize, gridSize - 2, gridSize - 2);
         });
 
-        document.getElementById("boxesEaten").textContent = `Boxes Eaten: ${boxesEaten}`;
-        document.getElementById("pendingPoints").textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
+        const boxesEatenElement = document.getElementById("boxesEaten");
+        if (boxesEatenElement) {
+            boxesEatenElement.textContent = `Boxes Eaten: ${boxesEaten}`;
+        }
+        const pendingPointsElement = document.getElementById("pendingPoints");
+        if (pendingPointsElement) {
+            pendingPointsElement.textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
+        }
     }
 
     function gameLoop(currentTime) {
@@ -1539,7 +1547,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (direction === "down") head.y++;
 
         if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight || snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-            gameOverSound.play();
+            if (gameOverSound) gameOverSound.play();
             showGameOverPopup();
             return;
         }
@@ -1547,7 +1555,7 @@ document.addEventListener("DOMContentLoaded", () => {
         snake.unshift(head);
         const eatenBoxIndex = boxes.findIndex(box => box.x === head.x && box.y === head.y);
         if (eatenBoxIndex !== -1) {
-            eatingSound.play();
+            if (eatingSound) eatingSound.play();
             boxesEaten++;
             const point = 0.5;
             playerData.pendingPoints = (playerData.pendingPoints || 0) + point;
@@ -1563,7 +1571,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             boxes.splice(eatenBoxIndex, 1);
             if (boxes.length < 5) generateBoxes();
-            if (boxesEaten % 10 === 0 || boxesEaten % 20 === 0 || boxesEaten % 30 === 0) victorySound.play();
+            if (boxesEaten % 10 === 0 || boxesEaten % 20 === 0 || boxesEaten % 30 === 0) {
+                if (victorySound) victorySound.play();
+            }
         } else {
             snake.pop();
         }
@@ -1575,14 +1585,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function showGameOverPopup() {
         const popup = document.getElementById("gameOverPopup");
         if (!popup) return;
-        document.getElementById("finalBoxesEaten").textContent = `Boxes Eaten: ${boxesEaten}`;
-        document.getElementById("finalPoints").textContent = `Earned Points: ${gamePoints.toFixed(2)} BST Points`;
+        const finalBoxesEaten = document.getElementById("finalBoxesEaten");
+        const finalPoints = document.getElementById("finalPoints");
+        if (finalBoxesEaten) finalBoxesEaten.textContent = `Boxes Eaten: ${boxesEaten}`;
+        if (finalPoints) finalPoints.textContent = `Earned Points: ${gamePoints.toFixed(2)} BST Points`;
         popup.style.display = "block";
         isGameRunning = false;
-        document.getElementById("closePopup").onclick = () => {
-            popup.style.display = "none";
-            resetGame().catch(err => console.error("Error resetting game:", err));
-        };
+        const closePopup = document.getElementById("closePopup");
+        if (closePopup) {
+            closePopup.onclick = () => {
+                popup.style.display = "none";
+                resetGame().catch(err => console.error("Error resetting game:", err));
+            };
+        }
     }
 
     async function resetGame() {
@@ -1829,9 +1844,12 @@ document.addEventListener("DOMContentLoaded", () => {
             CONVERSION_RATIO = Number(ethers.utils.formatUnits(await contract.conversionRatio(), 18));
             await loadPlayerHistory();
             updatePlayerHistoryUI();
-            document.getElementById("connectWallet").style.display = "none";
-            document.getElementById("disconnectWallet").style.display = "block";
-            document.getElementById("walletAddress").textContent = `Connected: ${account.slice(0, 6)}...`;
+            const connectWalletBtn = document.getElementById("connectWallet");
+            const disconnectWalletBtn = document.getElementById("disconnectWallet");
+            if (connectWalletBtn) connectWalletBtn.style.display = "none";
+            if (disconnectWalletBtn) disconnectWalletBtn.style.display = "block";
+            const walletAddressElement = document.getElementById("walletAddress");
+            if (walletAddressElement) walletAddressElement.textContent = `Connected: ${account.slice(0, 6)}...`;
             alert("Wallet connected successfully!");
         } catch (error) {
             console.error("Wallet connection error:", error);
@@ -1844,9 +1862,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function disconnectWallet() {
         account = null;
         contract = null;
-        document.getElementById("connectWallet").style.display = "block";
-        document.getElementById("disconnectWallet").style.display = "none";
-        document.getElementById("walletAddress").textContent = "";
+        const connectWalletBtn = document.getElementById("connectWallet");
+        const disconnectWalletBtn = document.getElementById("disconnectWallet");
+        const walletAddressElement = document.getElementById("walletAddress");
+        if (connectWalletBtn) connectWalletBtn.style.display = "block";
+        if (disconnectWalletBtn) disconnectWalletBtn.style.display = "none";
+        if (walletAddressElement) walletAddressElement.textContent = "";
         updatePlayerHistoryUI();
         alert("Wallet disconnected!");
     }
@@ -1905,45 +1926,101 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updatePlayerHistoryUI() {
-        document.getElementById("gamesPlayed").textContent = `Games Played: ${playerData.gamesPlayed || 0}`;
-        document.getElementById("totalPoints").textContent = `Total Points: ${(playerData.totalPoints || 0).toFixed(2)} BST Points`;
-        document.getElementById("totalGameRewards").textContent = `Total Token Rewards: ${(playerData.totalRewards || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("totalReferrals").textContent = `Total Referrals: ${playerData.totalReferrals || 0}`;
-        document.getElementById("referralPoints").textContent = `Referral Points: ${(playerData.referralPoints || 0).toFixed(2)} BST Points`;
-        document.getElementById("pendingPointsText").textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
-        document.getElementById("flexibleStakeBalance").textContent = `Flexible Stake Balance: ${(playerData.flexibleStakeBalance || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("lockedStakeBalance60D").textContent = `Locked Stake Balance (60D): ${(playerData.lockedStakeBalances[1] || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("lockedStakeBalance180D").textContent = `Locked Stake Balance (180D): ${(playerData.lockedStakeBalances[2] || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("lockedStakeBalance365D").textContent = `Locked Stake Balance (365D): ${(playerData.lockedStakeBalances[3] || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("walletBalance").textContent = `Wallet Balance: ${(playerData.walletBalance || 0).toFixed(2)} BST Tokens`;
-        document.getElementById("walletAddress").textContent = account ? `Connected: ${account.slice(0, 6)}...` : "";
-        document.getElementById("rewardHistoryList").innerHTML = (playerData.rewardHistory || []).map(entry =>
-            `<li>${entry.rewardType}: ${entry.amount.toFixed(2)} ${entry.rewardType.includes("Conversion") ? "BST Tokens" : "BST Points"} on ${new Date(entry.timestamp).toLocaleString()}${entry.referee !== "N/A" ? ` (Referee: ${entry.referee.slice(0, 6)}...)` : ""}</li>`
-        ).join("");
-        document.getElementById("taskHistoryList").innerHTML = (playerData.taskHistory || []).map(entry =>
-            `<li>${entry.taskType}: ${entry.amount.toFixed(2)} BST Points on ${new Date(entry.timestamp).toLocaleString()}</li>`
-        ).join("");
-        document.getElementById("stakingHistoryList").innerHTML = (playerData.stakingHistory || []).map(entry =>
-            `<li>${entry.action}: ${entry.amount.toFixed(2)} BST Tokens on ${new Date(entry.timestamp).toLocaleString()} (Lock Period: ${entry.lockPeriod === 0 ? "Flexible" : entry.lockPeriod === 1 ? "60 Days" : entry.lockPeriod === 2 ? "180 Days" : "365 Days"})</li>`
-        ).join("");
+        const gamesPlayed = document.getElementById("gamesPlayed");
+        if (gamesPlayed) gamesPlayed.textContent = `Games Played: ${playerData.gamesPlayed || 0}`;
+
+        const totalPoints = document.getElementById("totalPoints");
+        if (totalPoints) totalPoints.textContent = `Total Points: ${(playerData.totalPoints || 0).toFixed(2)} BST Points`;
+
+        const totalGameRewards = document.getElementById("totalGameRewards");
+        if (totalGameRewards) totalGameRewards.textContent = `Total Token Rewards: ${(playerData.totalRewards || 0).toFixed(2)} BST Tokens`;
+
+        const totalReferrals = document.getElementById("totalReferrals");
+        if (totalReferrals) totalReferrals.textContent = `Total Referrals: ${playerData.totalReferrals || 0}`;
+
+        const referralPoints = document.getElementById("referralPoints");
+        if (referralPoints) referralPoints.textContent = `Referral Points: ${(playerData.referralPoints || 0).toFixed(2)} BST Points`;
+
+        const pendingPointsText = document.getElementById("pendingPointsText");
+        if (pendingPointsText) pendingPointsText.textContent = `Pending Points: ${(playerData.pendingPoints || 0).toFixed(2)} BST Points`;
+
+        const flexibleStakeBalance = document.getElementById("flexibleStakeBalance");
+        if (flexibleStakeBalance) flexibleStakeBalance.textContent = `Flexible Stake Balance: ${(playerData.flexibleStakeBalance || 0).toFixed(2)} BST Tokens`;
+
+        const lockedStakeBalance60D = document.getElementById("lockedStakeBalance60D");
+        if (lockedStakeBalance60D) lockedStakeBalance60D.textContent = `Locked Stake Balance (60D): ${(playerData.lockedStakeBalances[1] || 0).toFixed(2)} BST Tokens`;
+
+        const lockedStakeBalance180D = document.getElementById("lockedStakeBalance180D");
+        if (lockedStakeBalance180D) lockedStakeBalance180D.textContent = `Locked Stake Balance (180D): ${(playerData.lockedStakeBalances[2] || 0).toFixed(2)} BST Tokens`;
+
+        const lockedStakeBalance365D = document.getElementById("lockedStakeBalance365D");
+        if (lockedStakeBalance365D) lockedStakeBalance365D.textContent = `Locked Stake Balance (365D): ${(playerData.lockedStakeBalances[3] || 0).toFixed(2)} BST Tokens`;
+
+        const walletBalance = document.getElementById("walletBalance");
+        if (walletBalance) walletBalance.textContent = `Wallet Balance: ${(playerData.walletBalance || 0).toFixed(2)} BST Tokens`;
+
+        const walletAddress = document.getElementById("walletAddress");
+        if (walletAddress) walletAddress.textContent = account ? `Connected: ${account.slice(0, 6)}...` : "";
+
+        const rewardHistoryList = document.getElementById("rewardHistoryList");
+        if (rewardHistoryList) {
+            rewardHistoryList.innerHTML = (playerData.rewardHistory || []).map(entry =>
+                `<li>${entry.rewardType}: ${entry.amount.toFixed(2)} ${entry.rewardType.includes("Conversion") ? "BST Tokens" : "BST Points"} on ${new Date(entry.timestamp).toLocaleString()}${entry.referee !== "N/A" ? ` (Referee: ${entry.referee.slice(0, 6)}...)` : ""}</li>`
+            ).join("");
+        }
+
+        const taskHistoryList = document.getElementById("taskHistoryList");
+        if (taskHistoryList) {
+            taskHistoryList.innerHTML = (playerData.taskHistory || []).map(entry =>
+                `<li>${entry.taskType}: ${entry.amount.toFixed(2)} BST Points on ${new Date(entry.timestamp).toLocaleString()}</li>`
+            ).join("");
+        }
+
+        const stakingHistoryList = document.getElementById("stakingHistoryList");
+        if (stakingHistoryList) {
+            stakingHistoryList.innerHTML = (playerData.stakingHistory || []).map(entry =>
+                `<li>${entry.action}: ${entry.amount.toFixed(2)} BST Tokens on ${new Date(entry.timestamp).toLocaleString()} (Lock Period: ${entry.lockPeriod === 0 ? "Flexible" : entry.lockPeriod === 1 ? "60 Days" : entry.lockPeriod === 2 ? "180 Days" : "365 Days"})</li>`
+            ).join("");
+        }
     }
 
-    document.getElementById("playGame").addEventListener("click", async () => {
-        if (!account) return alert("Connect wallet!");
-        showLoading(true);
-        enterFullscreen();
-        await resetGame().catch(err => console.error("Error resetting game:", err));
-        showLoading(false);
-    });
-    document.getElementById("connectWallet").addEventListener("click", connectWallet);
-    document.getElementById("disconnectWallet").addEventListener("click", disconnectWallet);
-    document.getElementById("claimWelcomeBonus").addEventListener("click", claimWelcomeBonus);
-    document.getElementById("claimDailyLoginReward").addEventListener("click", claimDailyLoginReward);
-    document.getElementById("claimSocialMediaShareReward").addEventListener("click", claimSocialMediaShareReward);
-    document.getElementById("convertPoints").addEventListener("click", convertPointsToTokens);
-    document.getElementById("stakeTokens").addEventListener("click", stakeTokens);
-    document.getElementById("unstakeTokens").addEventListener("click", unstakeTokens);
-    document.getElementById("getReferralLink").addEventListener("click", getReferralLink);
+    const playGameBtn = document.getElementById("playGame");
+    if (playGameBtn) {
+        playGameBtn.addEventListener("click", async () => {
+            if (!account) return alert("Connect wallet!");
+            showLoading(true);
+            enterFullscreen();
+            await resetGame().catch(err => console.error("Error resetting game:", err));
+            showLoading(false);
+        });
+    }
+
+    const connectWalletBtn = document.getElementById("connectWallet");
+    if (connectWalletBtn) connectWalletBtn.addEventListener("click", connectWallet);
+
+    const disconnectWalletBtn = document.getElementById("disconnectWallet");
+    if (disconnectWalletBtn) disconnectWalletBtn.addEventListener("click", disconnectWallet);
+
+    const claimWelcomeBonusBtn = document.getElementById("claimWelcomeBonus");
+    if (claimWelcomeBonusBtn) claimWelcomeBonusBtn.addEventListener("click", claimWelcomeBonus);
+
+    const claimDailyLoginRewardBtn = document.getElementById("claimDailyLoginReward");
+    if (claimDailyLoginRewardBtn) claimDailyLoginRewardBtn.addEventListener("click", claimDailyLoginReward);
+
+    const claimSocialMediaShareRewardBtn = document.getElementById("claimSocialMediaShareReward");
+    if (claimSocialMediaShareRewardBtn) claimSocialMediaShareRewardBtn.addEventListener("click", claimSocialMediaShareReward);
+
+    const convertPointsBtn = document.getElementById("convertPoints");
+    if (convertPointsBtn) convertPointsBtn.addEventListener("click", convertPointsToTokens);
+
+    const stakeTokensBtn = document.getElementById("stakeTokens");
+    if (stakeTokensBtn) stakeTokensBtn.addEventListener("click", stakeTokens);
+
+    const unstakeTokensBtn = document.getElementById("unstakeTokens");
+    if (unstakeTokensBtn) unstakeTokensBtn.addEventListener("click", unstakeTokens);
+
+    const getReferralLinkBtn = document.getElementById("getReferralLink");
+    if (getReferralLinkBtn) getReferralLinkBtn.addEventListener("click", getReferralLink);
 
     document.addEventListener("keydown", (event) => {
         if (isGameRunning) {
